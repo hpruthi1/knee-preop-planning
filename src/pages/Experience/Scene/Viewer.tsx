@@ -9,6 +9,9 @@ import {
   IExperienceContextType,
   experienceContext,
 } from "../../../context/Context";
+import { STLFileLoader } from "@babylonjs/loaders";
+
+import * as Utils from "../../../utils/FunctionLibrary";
 
 interface IViewerState {}
 
@@ -58,10 +61,10 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
       }
     });
 
-    engine.runRenderLoop(() => {
-      if (scene) {
+    scene.whenReadyAsync().then(() => {
+      engine.runRenderLoop(() => {
         scene.render();
-      }
+      });
     });
   };
 
@@ -72,18 +75,9 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
   prepareCamera = () => {
     this.scene!.createDefaultCamera(true);
-    const camera = this.scene!.activeCamera as ArcRotateCamera;
-    this.camera = camera;
-    this.camera.fov = 1;
-    this.camera.alpha = 1.57;
-    this.camera.beta = 1.3;
-    this.camera.radius = 10;
-    this.camera.minZ = 0;
-    this.camera.panningSensibility = 0;
-    this.camera.inputs.remove(this.camera.inputs.attached.keyboard);
-    this.camera.inputs.remove(this.camera.inputs.attached.mousewheel);
-    camera.alpha += Math.PI;
+    this.camera = this.scene!.activeCamera as ArcRotateCamera;
     this.camera.attachControl();
+    this.camera.maxZ = 2000;
   };
 
   prepareLighting = () => {
@@ -91,7 +85,24 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
   };
 
   setupEnvironment = async () => {
-    this.props.experienceContextProp?.setisLoading(false);
+    STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES = true;
+    const rootUrl = "/models/";
+
+    try {
+      const { femurAssetContainer, tibiaAssetContainer } =
+        await Utils.loadSTLModels(
+          rootUrl,
+          this.scene!,
+          "femur.stl",
+          "tibia.stl"
+        );
+
+      Utils.onSceneLoad(this.camera!);
+
+      this.props.experienceContextProp?.setisLoading(false);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   render() {
@@ -103,8 +114,6 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
           useHighPrecisionMatrix: true,
           premultipliedAlpha: false,
           antialias: true,
-          preserveDrawingBuffer: true,
-          stencil: true,
         }}
       />
     );
