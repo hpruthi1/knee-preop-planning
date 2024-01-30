@@ -59,5 +59,6 @@ export const onSceneLoad = (camera: ArcRotateCamera) => {
   });
 
   framingBehaviour.zoomOnBoundingInfo(worldExtends!.min, worldExtends!.max);
-  camera.beta = 0;
+  camera.alpha += Math.PI;
+  camera.beta = 1.3;
 };

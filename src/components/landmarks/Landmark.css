@@ -1,0 +1,10 @@
+.landmark_container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: black;
+  padding: 10px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  margin: 10px;
+}

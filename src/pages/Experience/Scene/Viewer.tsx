@@ -85,7 +85,7 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
   };
 
   setupEnvironment = async () => {
-    STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES = true;
+    STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES = false;
     const rootUrl = "/models/";
 
     try {

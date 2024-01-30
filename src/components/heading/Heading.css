@@ -1,0 +1,11 @@
+.center_container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%);
+  color: #e966a0;
+  padding: 10px;
+  margin: 10px;
+  text-decoration: underline;
+  text-transform: uppercase;
+}

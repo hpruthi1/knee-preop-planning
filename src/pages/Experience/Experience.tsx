@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { experienceContext } from "../../context/Context";
-import ViewerFC from "./Scene/Viewer";
+import ViewerFC, { Viewer } from "./Scene/Viewer";
+import ExperienceUI from "./ExperienceUI/ExperienceUI";
 
 const Experience = () => {
   const viewerRef = useRef<Viewer>(null);
@@ -13,7 +14,7 @@ const Experience = () => {
         setisLoading: setisLoading,
       }}
     >
-      {/* <ExperienceUI /> */}
+      <ExperienceUI />
       <ViewerFC viewerRef={viewerRef} />
     </experienceContext.Provider>
   );
