@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const Radio = () => {
-  const [checked, setChecked] = useState(true);
+  const [checked, setChecked] = useState(false);
 
   const handleInputChange = () => {
     setChecked(!checked);

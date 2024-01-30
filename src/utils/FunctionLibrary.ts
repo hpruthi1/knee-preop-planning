@@ -3,6 +3,7 @@ import {
   FramingBehavior,
   Scene,
   SceneLoader,
+  Vector3,
 } from "@babylonjs/core";
 
 export const loadSTLModels = async (
@@ -61,4 +62,5 @@ export const onSceneLoad = (camera: ArcRotateCamera) => {
   framingBehaviour.zoomOnBoundingInfo(worldExtends!.min, worldExtends!.max);
   camera.alpha += Math.PI;
   camera.beta = 1.3;
+  camera.target.y += 50;
 };
