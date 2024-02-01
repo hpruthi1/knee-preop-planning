@@ -5,15 +5,17 @@ import "@babylonjs/inspector";
 import SceneComponent, { SceneEventArgs } from "./Scene";
 import {
   ArcRotateCamera,
-  Color3,
+  BackgroundMaterial,
   Engine,
   GizmoManager,
   IPointerEvent,
   Mesh,
   MeshBuilder,
+  MirrorTexture,
   Nullable,
-  Path3D,
+  Plane,
   Scene,
+  Texture,
   UtilityLayerRenderer,
 } from "@babylonjs/core";
 
@@ -27,7 +29,6 @@ import * as Utils from "../../../utils/FunctionLibrary";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { Dispatch, ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import { ILandmark, toggleComplete } from "../../../store/slices/LandmarkSlice";
-import { store } from "../../../store/Store";
 
 interface IViewerState {}
 
@@ -144,6 +145,37 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
       this.gizmoManager.positionGizmoEnabled = true;
       this.gizmoManager.usePointerToAttachGizmos = false;
 
+      const ground = MeshBuilder.CreateGround(
+        "ground1",
+        { width: 2000, height: 2000 },
+        this.scene
+      );
+      ground.receiveShadows = true;
+
+      const backgroundMaterial = new BackgroundMaterial(
+        "backgroundMaterial",
+        this.scene
+      );
+      backgroundMaterial.diffuseTexture = new Texture(
+        "https://assets.babylonjs.com/environments/backgroundGround.png",
+        this.scene
+      );
+      backgroundMaterial.diffuseTexture.hasAlpha = true;
+      backgroundMaterial.opacityFresnel = false;
+      backgroundMaterial.shadowLevel = 0.4;
+
+      ground.material = backgroundMaterial;
+
+      const mirror = new MirrorTexture("mirror", 512, this.scene);
+      mirror.mirrorPlane = new Plane(0, -1, 0, 0);
+      mirror.renderList!.push(
+        femurAssetContainer.meshes[0],
+        tibiaAssetContainer.meshes[0]
+      );
+      backgroundMaterial.reflectionTexture = mirror;
+      backgroundMaterial.reflectionFresnel = true;
+      backgroundMaterial.reflectionStandardFresnelWeight = 0.8;
+
       this.props.experienceContextProp?.setisLoading(false);
     } catch (e) {
       console.error(e);
@@ -154,140 +186,43 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     this.scene!.onPointerDown = () => {};
   };
 
-  updateLines = () => {
-    const ma = this.scene?.getMeshByName("mechanicalAxis");
-    const aa = this.scene?.getMeshByName("anatomicalAxis");
+  updateLines = () => {};
 
-    const ta = this.scene?.getMeshByName("teaAxis");
-    const pca = this.scene?.getMeshByName("pcAxis");
+  createLines = () => {
+    this.props.experienceContextProp.setlinesCreated(true);
+    const femurCenterMesh = this.scene?.getMeshByName("Femur Center");
+    const hipCenterMesh = this.scene?.getMeshByName("Hip Center");
 
-    if (ma || aa || ta || pca) {
-      ma?.dispose();
-      aa?.dispose();
-      ta?.dispose();
-      pca?.dispose();
-    }
+    Utils.drawLineFromPoints("mechanicalAxis", [
+      femurCenterMesh!.position,
+      hipCenterMesh!.position,
+    ]);
 
-    const landmarks = store.getState().landmarks;
-    const placed = landmarks.filter((landmark) => landmark.isPlaced);
+    const femurProximalMesh = this.scene?.getMeshByName("Femur Proximal Canal");
+    const femurDistalMesh = this.scene?.getMeshByName("Femur Distal Canal");
 
-    console.log(placed);
+    Utils.drawLineFromPoints("anatomicalAxis", [
+      femurProximalMesh!.position,
+      femurDistalMesh!.position,
+    ]);
 
-    const femurCenter = placed.find((point) =>
-      point.name.includes("Femur Center")
-    );
-    const hipCenter = placed.find((point) => point.name.includes("Hip Center"));
+    const medialEpiMesh = this.scene?.getMeshByName("Medial Epicondyle");
+    const lateralEpiMesh = this.scene?.getMeshByName("Lateral Epicondyle");
 
-    const femurProximal = placed.find((point) =>
-      point.name.includes("Femur Proximal Canal")
-    );
-    const femurDistal = placed.find((point) =>
-      point.name.includes("Femur Distal Canal")
-    );
+    Utils.drawLineFromPoints("teaAxis", [
+      medialEpiMesh!.position,
+      lateralEpiMesh!.position,
+    ]);
 
-    const medialEpi = placed.find((point) =>
-      point.name.includes("Medial Epicondyle")
-    );
-    const lateralEpi = placed.find((point) =>
-      point.name.includes("Lateral Epicondyle")
-    );
+    const postMedialMesh = this.scene?.getMeshByName("Posterior Medial Pt");
+    const postLateralMesh = this.scene?.getMeshByName("Posterior Lateral Pt");
 
-    const postMedial = placed.find((point) =>
-      point.name.includes("Posterior Medial Pt")
-    );
-    const postLateral = placed.find((point) =>
-      point.name.includes("Posterior Lateral Pt")
-    );
+    Utils.drawLineFromPoints("pcAxis", [
+      postMedialMesh!.position,
+      postLateralMesh!.position,
+    ]);
 
-    if (
-      !femurCenter ||
-      !hipCenter ||
-      !femurProximal ||
-      !femurDistal ||
-      !medialEpi ||
-      !lateralEpi ||
-      !postMedial ||
-      !postLateral
-    )
-      return;
-
-    const femurCenterMesh = this.scene?.getMeshByName(femurCenter.name);
-    const hipCenterMesh = this.scene?.getMeshByName(hipCenter.name);
-
-    const femurProximalMesh = this.scene?.getMeshByName(femurProximal.name);
-    const femurDistalMesh = this.scene?.getMeshByName(femurDistal.name);
-
-    const medialEpiMesh = this.scene?.getMeshByName(medialEpi.name);
-    const lateralEpiMesh = this.scene?.getMeshByName(lateralEpi.name);
-
-    const postMedialMesh = this.scene?.getMeshByName(postMedial.name);
-    const postLateralMesh = this.scene?.getMeshByName(postLateral.name);
-
-    const mechanicalAxisPoints = [
-      femurCenterMesh!.absolutePosition,
-      hipCenterMesh!.absolutePosition,
-    ];
-
-    const anatomicalAxisPoints = [
-      femurProximalMesh!.absolutePosition,
-      femurDistalMesh!.absolutePosition,
-    ];
-
-    const teaAxisPoints = [
-      medialEpiMesh!.absolutePosition,
-      lateralEpiMesh!.absolutePosition,
-    ];
-
-    const pcAxisPoints = [
-      postMedialMesh!.absolutePosition,
-      postLateralMesh!.absolutePosition,
-    ];
-
-    const path = new Path3D(mechanicalAxisPoints);
-
-    const curve = path.getCurve();
-
-    const path2 = new Path3D(anatomicalAxisPoints);
-    const curve2 = path2.getCurve();
-
-    const path3 = new Path3D(teaAxisPoints);
-    const curve3 = path3.getCurve();
-
-    const path4 = new Path3D(pcAxisPoints);
-    const curve4 = path4.getCurve();
-
-    // visualisation
-    const mechanicalAxis = MeshBuilder.CreateLines("mechanicalAxis", {
-      points: curve,
-      updatable: true,
-    });
-
-    const anatomicalAxis = MeshBuilder.CreateLines("anatomicalAxis", {
-      points: curve2,
-      updatable: true,
-    });
-
-    anatomicalAxis.renderingGroupId = 1;
-    anatomicalAxis.color = Color3.Random();
-
-    const teaAxis = MeshBuilder.CreateLines("teaAxis", {
-      points: curve3,
-      updatable: true,
-    });
-
-    teaAxis.renderingGroupId = 1;
-    teaAxis.color = Color3.Random();
-
-    const pcAxis = MeshBuilder.CreateLines("pcAxis", {
-      points: curve4,
-      updatable: true,
-    });
-
-    pcAxis.renderingGroupId = 1;
-    pcAxis.color = Color3.Random();
-
-    mechanicalAxis.renderingGroupId = 1;
-    mechanicalAxis.color = Color3.Random();
+    Utils.createPerpendicularPlane(hipCenterMesh!, femurCenterMesh!);
   };
 
   startLandmarkCreation = (pointName: string) => {

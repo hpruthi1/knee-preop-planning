@@ -7,12 +7,18 @@ const Experience = () => {
   const viewerRef = useRef<Viewer>(null);
   const [isLoading, setisLoading] = useState(true);
 
+  const [linesCreated, setlinesCreated] = useState(false);
+
   const startLandmarkCreation = (pointName: string) => {
     viewerRef.current?.startLandmarkCreation(pointName);
   };
 
   const updateLines = () => {
     viewerRef.current?.updateLines();
+  };
+
+  const createLines = () => {
+    viewerRef.current?.createLines();
   };
 
   return (
@@ -22,6 +28,9 @@ const Experience = () => {
         setisLoading: setisLoading,
         startLandmarkCreation: startLandmarkCreation,
         updateLines: updateLines,
+        createLines: createLines,
+        linesCreated: linesCreated,
+        setlinesCreated: setlinesCreated,
       }}
     >
       <ViewerFC viewerRef={viewerRef} />

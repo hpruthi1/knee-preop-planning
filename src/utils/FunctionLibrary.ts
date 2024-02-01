@@ -1,10 +1,16 @@
 import {
+  AbstractMesh,
   ArcRotateCamera,
   Color3,
   FramingBehavior,
+  Mesh,
+  MeshBuilder,
+  Path3D,
   Scene,
   SceneLoader,
+  Space,
   StandardMaterial,
+  Vector3,
 } from "@babylonjs/core";
 
 export const loadSTLModels = async (
@@ -75,4 +81,40 @@ export const onSceneLoad = (camera: ArcRotateCamera) => {
   camera.alpha += Math.PI;
   camera.beta = 1.3;
   camera.target.y += 50;
+};
+
+export const drawLineFromPoints = (targetName: string, points: Vector3[]) => {
+  const path = new Path3D(points);
+  const curve = path.getCurve();
+
+  const createLine = MeshBuilder.CreateLines(targetName, {
+    points: curve,
+    updatable: true,
+  });
+
+  createLine.renderingGroupId = 1;
+  createLine.color = Color3.Random();
+
+  return curve;
+};
+
+export const createPerpendicularPlane = (
+  hipCenterMesh: AbstractMesh,
+  femurCenterMesh: AbstractMesh
+) => {
+  const p = MeshBuilder.CreatePlane("mechanicalPerpedicular", {
+    size: 100,
+    sideOrientation: Mesh.DOUBLESIDE,
+  });
+
+  const dir = new Vector3(
+    hipCenterMesh!.absolutePosition.x - femurCenterMesh!.absolutePosition.x,
+    0,
+    hipCenterMesh!.absolutePosition.z - femurCenterMesh!.absolutePosition.z
+  );
+
+  p.position = femurCenterMesh!.absolutePosition;
+  p.lookAt(dir, undefined, undefined, undefined, Space.WORLD);
+
+  return p;
 };

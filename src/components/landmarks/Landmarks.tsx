@@ -6,7 +6,8 @@ import { useContext } from "react";
 import { experienceContext } from "../../context/Context";
 
 const Landmarks = () => {
-  const { startLandmarkCreation, updateLines } = useContext(experienceContext);
+  const { startLandmarkCreation, createLines, updateLines, linesCreated } =
+    useContext(experienceContext);
   const landmarks = useAppSelector((state) => state.landmarks);
   const dispatch = useAppDispatch();
 
@@ -45,8 +46,9 @@ const Landmarks = () => {
 
       <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
         <button
+          disabled={landmarks.some((l) => !l.isPlaced)}
           onClick={() => {
-            updateLines();
+            linesCreated ? updateLines() : createLines();
           }}
         >
           Update Line
