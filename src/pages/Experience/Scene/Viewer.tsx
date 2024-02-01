@@ -135,7 +135,11 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
       const utilityLayer = new UtilityLayerRenderer(this.scene!, true);
       utilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
-      this.gizmoManager = new GizmoManager(this.scene!, 4, utilityLayer);
+      this.gizmoManager = new GizmoManager(
+        this.scene!,
+        undefined,
+        utilityLayer
+      );
 
       this.gizmoManager.positionGizmoEnabled = true;
       this.gizmoManager.usePointerToAttachGizmos = false;
@@ -151,6 +155,13 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
   };
 
   updateLines = () => {
+    const ma = this.scene?.getMeshByName("mechanicalAxis");
+    const aa = this.scene?.getMeshByName("anatomicalAxis");
+
+    if (ma || aa) {
+      ma?.dispose();
+      aa?.dispose();
+    }
     const landmarks = store.getState().landmarks;
     const placed = landmarks.filter((landmark) => landmark.isPlaced);
     const femurCenter = placed.find((point) =>
@@ -159,28 +170,53 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
     const hipCenter = placed.find((point) => point.name.includes("Hip Center"));
 
-    if (!femurCenter || !hipCenter) return;
+    const femurProximal = placed.find((point) =>
+      point.name.includes("Femur Proximal Canal")
+    );
+    const femurDistal = placed.find((point) =>
+      point.name.includes("Femur Distal Canal")
+    );
+
+    if (!femurCenter || !hipCenter || !femurProximal || !femurDistal) return;
 
     const femurCenterMesh = this.scene?.getMeshByName(femurCenter.name);
     const hipCenterMesh = this.scene?.getMeshByName(hipCenter.name);
 
-    console.log(femurCenterMesh, hipCenterMesh);
+    const femurProximalMesh = this.scene?.getMeshByName(femurProximal.name);
+    const femurDistalMesh = this.scene?.getMeshByName(femurDistal.name);
 
-    // line between
-    const points = [
+    const mechanicalAxisPoints = [
       femurCenterMesh!.absolutePosition,
       hipCenterMesh!.absolutePosition,
-    ]; // array of Vector3
-    const path = new Path3D(points);
+    ];
+
+    const anatomicalAxisPoints = [
+      femurProximalMesh!.absolutePosition,
+      femurDistalMesh!.absolutePosition,
+    ];
+
+    const path = new Path3D(mechanicalAxisPoints);
     const curve = path.getCurve();
+
+    const path2 = new Path3D(anatomicalAxisPoints);
+    const curve2 = path2.getCurve();
+
     // visualisation
-    const line = MeshBuilder.CreateLines("li1", {
+    const mechanicalAxis = MeshBuilder.CreateLines("mechanicalAxis", {
       points: curve,
       updatable: true,
     });
 
-    line.renderingGroupId = 1;
-    line.color = Color3.Red();
+    const anatomicalAxis = MeshBuilder.CreateLines("anatomicalAxis", {
+      points: curve2,
+      updatable: true,
+    });
+
+    anatomicalAxis.renderingGroupId = 1;
+    anatomicalAxis.color = Color3.Blue();
+
+    mechanicalAxis.renderingGroupId = 1;
+    mechanicalAxis.color = Color3.Red();
   };
 
   startLandmarkCreation = (pointName: string) => {
