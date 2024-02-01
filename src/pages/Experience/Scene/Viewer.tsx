@@ -5,12 +5,14 @@ import "@babylonjs/inspector";
 import SceneComponent, { SceneEventArgs } from "./Scene";
 import {
   ArcRotateCamera,
+  Color3,
   Engine,
   GizmoManager,
   IPointerEvent,
   Mesh,
   MeshBuilder,
   Nullable,
+  Path3D,
   Scene,
   UtilityLayerRenderer,
 } from "@babylonjs/core";
@@ -25,6 +27,7 @@ import * as Utils from "../../../utils/FunctionLibrary";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { Dispatch, ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
 import { ILandmark, toggleComplete } from "../../../store/slices/LandmarkSlice";
+import { store } from "../../../store/Store";
 
 interface IViewerState {}
 
@@ -147,6 +150,39 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     this.scene!.onPointerDown = () => {};
   };
 
+  updateLines = () => {
+    const landmarks = store.getState().landmarks;
+    const placed = landmarks.filter((landmark) => landmark.isPlaced);
+    const femurCenter = placed.find((point) =>
+      point.name.includes("Femur Center")
+    );
+
+    const hipCenter = placed.find((point) => point.name.includes("Hip Center"));
+
+    if (!femurCenter || !hipCenter) return;
+
+    const femurCenterMesh = this.scene?.getMeshByName(femurCenter.name);
+    const hipCenterMesh = this.scene?.getMeshByName(hipCenter.name);
+
+    console.log(femurCenterMesh, hipCenterMesh);
+
+    // line between
+    const points = [
+      femurCenterMesh!.absolutePosition,
+      hipCenterMesh!.absolutePosition,
+    ]; // array of Vector3
+    const path = new Path3D(points);
+    const curve = path.getCurve();
+    // visualisation
+    const line = MeshBuilder.CreateLines("li1", {
+      points: curve,
+      updatable: true,
+    });
+
+    line.renderingGroupId = 1;
+    line.color = Color3.Red();
+  };
+
   startLandmarkCreation = (pointName: string) => {
     const onPointerDown = (evt: IPointerEvent) => {
       if (evt.button !== 0) {
@@ -171,6 +207,7 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
         const sphere = MeshBuilder.CreateSphere(pointName, {
           sideOrientation: Mesh.DOUBLESIDE,
+          diameter: 5,
         });
 
         sphere.position = position;

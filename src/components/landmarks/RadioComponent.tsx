@@ -2,6 +2,7 @@ import { useState } from "react";
 
 type RadioProps = {
   onClick: React.MouseEventHandler<HTMLInputElement>;
+  disable: boolean;
 };
 
 const RadioComponent = (props: RadioProps) => {
@@ -15,6 +16,7 @@ const RadioComponent = (props: RadioProps) => {
         props.onClick(e);
       }}
       defaultChecked={checked}
+      disabled={props.disable}
     ></input>
   );
 };

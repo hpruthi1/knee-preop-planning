@@ -11,12 +11,17 @@ const Experience = () => {
     viewerRef.current?.startLandmarkCreation(pointName);
   };
 
+  const updateLines = () => {
+    viewerRef.current?.updateLines();
+  };
+
   return (
     <experienceContext.Provider
       value={{
         isLoading: isLoading,
         setisLoading: setisLoading,
         startLandmarkCreation: startLandmarkCreation,
+        updateLines: updateLines,
       }}
     >
       <ViewerFC viewerRef={viewerRef} />

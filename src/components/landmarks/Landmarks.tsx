@@ -6,7 +6,7 @@ import { useContext } from "react";
 import { experienceContext } from "../../context/Context";
 
 const Landmarks = () => {
-  const { startLandmarkCreation } = useContext(experienceContext);
+  const { startLandmarkCreation, updateLines } = useContext(experienceContext);
   const landmarks = useAppSelector((state) => state.landmarks);
   const dispatch = useAppDispatch();
 
@@ -25,6 +25,7 @@ const Landmarks = () => {
             >
               <li>{point.name}</li>
               <RadioComponent
+                disable={landmarks[idx].isPlaced}
                 onClick={() => {
                   dispatch(
                     setSelected({
@@ -43,7 +44,13 @@ const Landmarks = () => {
       </ul>
 
       <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-        <button onClick={() => {}}>Update Line</button>
+        <button
+          onClick={() => {
+            updateLines();
+          }}
+        >
+          Update Line
+        </button>
       </div>
     </div>
   );

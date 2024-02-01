@@ -4,6 +4,7 @@ export interface IExperienceContextType {
   isLoading: boolean;
   setisLoading: Dispatch<SetStateAction<boolean>>;
   startLandmarkCreation: (pointName: string) => void;
+  updateLines: () => void;
 }
 
 export const experienceContext = createContext<IExperienceContextType>(
