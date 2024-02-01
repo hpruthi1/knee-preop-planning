@@ -1,12 +1,16 @@
 import "./Landmark.css";
-import { pointsListData } from "./Points";
-import Radio from "./Radio";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import RadioComponent from "./RadioComponent";
+import { toggleComplete } from "../../store/slices/LandmarkSlice";
 
 const Landmarks = () => {
+  const landmarks = useAppSelector((state) => state.landmarks);
+  const dispatch = useAppDispatch();
+
   return (
     <div className="landmark_container">
       <ul>
-        {pointsListData.map((point, idx) => {
+        {landmarks.map((point, idx) => {
           return (
             <div
               key={idx}
@@ -17,7 +21,16 @@ const Landmarks = () => {
               }}
             >
               <li>{point.name}</li>
-              <Radio />
+              <RadioComponent
+                onClick={() => {
+                  dispatch(
+                    toggleComplete({
+                      name: point.name,
+                      placed: true,
+                    })
+                  );
+                }}
+              />
             </div>
           );
         })}

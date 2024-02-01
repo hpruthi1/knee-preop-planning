@@ -3,7 +3,17 @@ import "@babylonjs/core/Helpers/sceneHelpers";
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import SceneComponent, { SceneEventArgs } from "./Scene";
-import { ArcRotateCamera, Engine, Nullable, Scene } from "@babylonjs/core";
+import {
+  ArcRotateCamera,
+  Engine,
+  IPointerEvent,
+  Mesh,
+  MeshBuilder,
+  Nullable,
+  Quaternion,
+  Scene,
+  Vector3,
+} from "@babylonjs/core";
 
 import {
   IExperienceContextType,
@@ -21,6 +31,8 @@ interface IViewerProps {
 
 const ViewerFC = (props: { viewerRef: LegacyRef<Viewer> | undefined }) => {
   const experienceContextRef = useContext(experienceContext);
+  // console.log(experienceContextRef.currentLandmark);
+
   return (
     <Viewer
       ref={props.viewerRef}
@@ -37,7 +49,7 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
   public scene: Scene | undefined;
   private camera: ArcRotateCamera | undefined;
 
-  constructor(props: IViewerProps | Readonly<IViewerProps>) {
+  constructor(props: IViewerProps) {
     super(props);
     this.state = {};
   }
@@ -97,12 +109,69 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
           "tibia.stl"
         );
 
+      console.log(femurAssetContainer, tibiaAssetContainer);
+
       Utils.onSceneLoad(this.camera!);
 
       this.props.experienceContextProp?.setisLoading(false);
     } catch (e) {
       console.error(e);
     }
+  };
+
+  startLandmarkCreation = (pointName: string) => {
+    console.log(this.props.experienceContextProp.currentLandmark);
+
+    const onPointerDown = (evt: IPointerEvent) => {
+      if (evt.button !== 0) {
+        return;
+      }
+
+      if (!this.scene) return;
+      if (!pointName) return;
+
+      // check if we are under a mesh
+      const pickInfo = this.scene.pick(
+        this.scene.pointerX,
+        this.scene.pointerY,
+        (mesh) => {
+          return mesh === this.scene?.getMeshByName("femur");
+        }
+      );
+
+      if (pickInfo.hit) {
+        const position = pickInfo.pickedPoint!;
+        const normal = pickInfo.getNormal(true)!;
+
+        const sphere = MeshBuilder.CreateSphere(pointName, {
+          sideOrientation: Mesh.DOUBLESIDE,
+        });
+
+        sphere.position = position;
+
+        const axis2 = Vector3.Up();
+        const axis3 = Vector3.Up();
+        const start = this.camera!.position!;
+
+        Vector3.CrossToRef(start, normal, axis2);
+        Vector3.CrossToRef(axis2, normal, axis3);
+        const tmpVec = Vector3.RotationFromAxis(axis3.negate(), normal, axis2);
+        const quat = Quaternion.RotationYawPitchRoll(
+          tmpVec.y,
+          tmpVec.x,
+          tmpVec.z
+        );
+        sphere.rotation = quat.toEulerAngles();
+
+        this.props.experienceContextProp.setcurrentLandmark((value) => {
+          return { ...value, isPlaced: true };
+        });
+      }
+    };
+
+    this.scene!.onPointerDown = (evt) => {
+      onPointerDown(evt);
+    };
   };
 
   render() {

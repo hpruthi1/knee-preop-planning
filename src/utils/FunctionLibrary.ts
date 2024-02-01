@@ -1,9 +1,10 @@
 import {
   ArcRotateCamera,
+  Color3,
   FramingBehavior,
   Scene,
   SceneLoader,
-  Vector3,
+  StandardMaterial,
 } from "@babylonjs/core";
 
 export const loadSTLModels = async (
@@ -29,10 +30,21 @@ export const loadSTLModels = async (
   rootNode1.scalingDeterminant = 0.5;
   rootNode1.name = "femur";
 
+  const femurMat = new StandardMaterial("femurMat", scene);
+
+  femurMat.diffuseColor = Color3.FromHexString("#30c1a9");
+
+  rootNode1.material = femurMat;
+
   const rootNode2 = tibiaAssetContainer.meshes[0];
   rootNode2.scalingDeterminant = 0.5;
 
   rootNode2.name = "tibia";
+
+  const tibiaMat = new StandardMaterial("tibiaMat", scene);
+  tibiaMat.diffuseColor = Color3.FromHexString("#956258");
+
+  rootNode2.material = tibiaMat;
 
   femurAssetContainer.addAllToScene();
   tibiaAssetContainer.addAllToScene();

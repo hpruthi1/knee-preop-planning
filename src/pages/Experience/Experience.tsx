@@ -7,15 +7,20 @@ const Experience = () => {
   const viewerRef = useRef<Viewer>(null);
   const [isLoading, setisLoading] = useState(true);
 
+  const startLandmarkCreation = (pointName: string) => {
+    viewerRef.current?.startLandmarkCreation(pointName);
+  };
+
   return (
     <experienceContext.Provider
       value={{
         isLoading: isLoading,
         setisLoading: setisLoading,
+        startLandmarkCreation: startLandmarkCreation,
       }}
     >
-      <ExperienceUI />
       <ViewerFC viewerRef={viewerRef} />
+      <ExperienceUI />
     </experienceContext.Provider>
   );
 };
