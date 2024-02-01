@@ -1,9 +1,12 @@
 import "./Landmark.css";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import RadioComponent from "./RadioComponent";
-import { toggleComplete } from "../../store/slices/LandmarkSlice";
+import { setSelected } from "../../store/slices/LandmarkSlice";
+import { useContext } from "react";
+import { experienceContext } from "../../context/Context";
 
 const Landmarks = () => {
+  const { startLandmarkCreation } = useContext(experienceContext);
   const landmarks = useAppSelector((state) => state.landmarks);
   const dispatch = useAppDispatch();
 
@@ -24,11 +27,14 @@ const Landmarks = () => {
               <RadioComponent
                 onClick={() => {
                   dispatch(
-                    toggleComplete({
+                    setSelected({
                       name: point.name,
-                      placed: true,
+                      isPlaced: false,
+                      selected: true,
                     })
                   );
+
+                  startLandmarkCreation(point.name);
                 }}
               />
             </div>

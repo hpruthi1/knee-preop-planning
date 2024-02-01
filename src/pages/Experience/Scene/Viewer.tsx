@@ -10,9 +10,7 @@ import {
   Mesh,
   MeshBuilder,
   Nullable,
-  Quaternion,
   Scene,
-  Vector3,
 } from "@babylonjs/core";
 
 import {
@@ -22,21 +20,36 @@ import {
 import { STLFileLoader } from "@babylonjs/loaders";
 
 import * as Utils from "../../../utils/FunctionLibrary";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { Dispatch, ThunkDispatch, UnknownAction } from "@reduxjs/toolkit";
+import { ILandmark, toggleComplete } from "../../../store/slices/LandmarkSlice";
 
 interface IViewerState {}
 
 interface IViewerProps {
   experienceContextProp: IExperienceContextType;
+  landmarks: ILandmark[];
+  dispatch: ThunkDispatch<
+    {
+      landmarks: ILandmark[];
+    },
+    undefined,
+    UnknownAction
+  > &
+    Dispatch<UnknownAction>;
 }
 
 const ViewerFC = (props: { viewerRef: LegacyRef<Viewer> | undefined }) => {
   const experienceContextRef = useContext(experienceContext);
-  // console.log(experienceContextRef.currentLandmark);
+  const landmarks = useAppSelector((state) => state.landmarks);
+  const dispatch = useAppDispatch();
 
   return (
     <Viewer
       ref={props.viewerRef}
       experienceContextProp={experienceContextRef}
+      dispatch={dispatch}
+      landmarks={landmarks}
     />
   );
 };
@@ -88,7 +101,7 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
   prepareCamera = () => {
     this.scene!.createDefaultCamera(true);
     this.camera = this.scene!.activeCamera as ArcRotateCamera;
-    this.camera.attachControl();
+    this.camera.attachControl(this.canvas, true);
     this.camera.maxZ = 2000;
   };
 
@@ -119,9 +132,11 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     }
   };
 
-  startLandmarkCreation = (pointName: string) => {
-    console.log(this.props.experienceContextProp.currentLandmark);
+  stopLandmarkCreation = () => {
+    this.scene!.onPointerDown = () => {};
+  };
 
+  startLandmarkCreation = (pointName: string) => {
     const onPointerDown = (evt: IPointerEvent) => {
       if (evt.button !== 0) {
         return;
@@ -149,23 +164,13 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
         sphere.position = position;
 
-        const axis2 = Vector3.Up();
-        const axis3 = Vector3.Up();
-        const start = this.camera!.position!;
+        sphere.lookAt(sphere.position.add(normal));
 
-        Vector3.CrossToRef(start, normal, axis2);
-        Vector3.CrossToRef(axis2, normal, axis3);
-        const tmpVec = Vector3.RotationFromAxis(axis3.negate(), normal, axis2);
-        const quat = Quaternion.RotationYawPitchRoll(
-          tmpVec.y,
-          tmpVec.x,
-          tmpVec.z
+        this.props.dispatch(
+          toggleComplete({ name: pointName, isPlaced: true })
         );
-        sphere.rotation = quat.toEulerAngles();
 
-        this.props.experienceContextProp.setcurrentLandmark((value) => {
-          return { ...value, isPlaced: true };
-        });
+        this.stopLandmarkCreation();
       }
     };
 
