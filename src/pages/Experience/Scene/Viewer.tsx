@@ -6,11 +6,13 @@ import SceneComponent, { SceneEventArgs } from "./Scene";
 import {
   ArcRotateCamera,
   Engine,
+  GizmoManager,
   IPointerEvent,
   Mesh,
   MeshBuilder,
   Nullable,
   Scene,
+  UtilityLayerRenderer,
 } from "@babylonjs/core";
 
 import {
@@ -61,6 +63,8 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
   private engine: Engine | undefined;
   public scene: Scene | undefined;
   private camera: ArcRotateCamera | undefined;
+
+  private gizmoManager: GizmoManager | undefined;
 
   constructor(props: IViewerProps) {
     super(props);
@@ -126,6 +130,13 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
       Utils.onSceneLoad(this.camera!);
 
+      const utilityLayer = new UtilityLayerRenderer(this.scene!, true);
+      utilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
+      this.gizmoManager = new GizmoManager(this.scene!, 4, utilityLayer);
+
+      this.gizmoManager.positionGizmoEnabled = true;
+      this.gizmoManager.usePointerToAttachGizmos = false;
+
       this.props.experienceContextProp?.setisLoading(false);
     } catch (e) {
       console.error(e);
@@ -165,6 +176,8 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
         sphere.position = position;
 
         sphere.lookAt(sphere.position.add(normal));
+
+        this.gizmoManager?.attachToMesh(sphere);
 
         this.props.dispatch(
           toggleComplete({ name: pointName, isPlaced: true })
