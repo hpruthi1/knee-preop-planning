@@ -21,6 +21,14 @@ const Experience = () => {
     viewerRef.current?.createLines();
   };
 
+  const updateVarusPlane = (value: number) => {
+    viewerRef.current?.updateVarusPlane(value);
+  };
+
+  const updateFlexionPlane = (value: number) => {
+    viewerRef.current?.updateFlexionPlane(value);
+  };
+
   return (
     <experienceContext.Provider
       value={{
@@ -31,6 +39,8 @@ const Experience = () => {
         createLines: createLines,
         linesCreated: linesCreated,
         setlinesCreated: setlinesCreated,
+        updateVarusPlane: updateVarusPlane,
+        updateFlexionPlane: updateFlexionPlane,
       }}
     >
       <ViewerFC viewerRef={viewerRef} />

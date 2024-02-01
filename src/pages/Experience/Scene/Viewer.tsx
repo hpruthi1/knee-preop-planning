@@ -16,6 +16,7 @@ import {
   Plane,
   Scene,
   Texture,
+  Tools,
   UtilityLayerRenderer,
 } from "@babylonjs/core";
 
@@ -186,10 +187,27 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     this.scene!.onPointerDown = () => {};
   };
 
+  updateVarusPlane(value: number) {
+    const plane = this.scene?.getMeshByName("varusPlane");
+    if (!plane) return;
+
+    plane.rotation.x -= Tools.ToRadians(value);
+    plane.rotation.y += Tools.ToRadians(value);
+    plane.rotation.z += Tools.ToRadians(value);
+  }
+
+  updateFlexionPlane(value: number) {
+    const plane = this.scene?.getMeshByName("flexionPlane");
+    if (!plane) return;
+
+    plane.rotation.x += Tools.ToRadians(value);
+  }
+
   updateLines = () => {};
 
   createLines = () => {
     this.props.experienceContextProp.setlinesCreated(true);
+    this.gizmoManager?.attachToMesh(null);
     const femurCenterMesh = this.scene?.getMeshByName("Femur Center");
     const hipCenterMesh = this.scene?.getMeshByName("Hip Center");
 
@@ -222,7 +240,16 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
       postLateralMesh!.position,
     ]);
 
-    Utils.createPerpendicularPlane(hipCenterMesh!, femurCenterMesh!);
+    const plane = Utils.createPerpendicularPlane(
+      hipCenterMesh!,
+      femurCenterMesh!
+    );
+
+    Utils.projectTeaAxisonPlane(
+      medialEpiMesh!.position,
+      lateralEpiMesh!.position,
+      plane
+    );
   };
 
   startLandmarkCreation = (pointName: string) => {
@@ -251,6 +278,8 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
           sideOrientation: Mesh.DOUBLESIDE,
           diameter: 5,
         });
+
+        sphere.isPickable = false;
 
         sphere.position = position;
 

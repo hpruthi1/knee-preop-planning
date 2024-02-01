@@ -8,6 +8,8 @@ export interface IExperienceContextType {
   createLines: () => void;
   linesCreated: boolean;
   setlinesCreated: Dispatch<SetStateAction<boolean>>;
+  updateVarusPlane: (value: number) => void;
+  updateFlexionPlane: (value: number) => void;
 }
 
 export const experienceContext = createContext<IExperienceContextType>(

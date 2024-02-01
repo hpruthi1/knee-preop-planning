@@ -10,6 +10,7 @@ import {
   SceneLoader,
   Space,
   StandardMaterial,
+  Tools,
   Vector3,
 } from "@babylonjs/core";
 
@@ -92,6 +93,8 @@ export const drawLineFromPoints = (targetName: string, points: Vector3[]) => {
     updatable: true,
   });
 
+  createLine.isPickable = false;
+
   createLine.renderingGroupId = 1;
   createLine.color = Color3.Random();
 
@@ -107,6 +110,8 @@ export const createPerpendicularPlane = (
     sideOrientation: Mesh.DOUBLESIDE,
   });
 
+  p.isPickable = true;
+
   const dir = new Vector3(
     hipCenterMesh!.absolutePosition.x - femurCenterMesh!.absolutePosition.x,
     0,
@@ -114,7 +119,57 @@ export const createPerpendicularPlane = (
   );
 
   p.position = femurCenterMesh!.absolutePosition;
-  p.lookAt(dir, undefined, undefined, undefined, Space.WORLD);
+  p.lookAt(dir, undefined, undefined, undefined, Space.LOCAL);
+
+  drawLineFromPoints("anteriorLine", [
+    new Vector3(p.position.x, p.position.y + 10, p.position.z),
+    p.position,
+  ]);
+
+  drawLineFromPoints("lateralLine", [
+    new Vector3(p.position.x - 10, p.position.y, p.position.z),
+    p.position,
+  ]);
+
+  const clonedPerpendicularPlane = p.clone("varusPlane");
+  clonedPerpendicularPlane.position = p.position;
+  clonedPerpendicularPlane.rotation = p.rotation;
+
+  const clonedPerpendicularPlane2 = p.clone("flexionPlane");
+  clonedPerpendicularPlane2.position = p.position;
+  clonedPerpendicularPlane2.rotation = p.rotation;
 
   return p;
 };
+
+export const projectTeaAxisonPlane = (
+  point1: Vector3,
+  point2: Vector3,
+  plane: Mesh
+) => {
+  const planeNormal = Vector3.Up();
+  const projectedPoint1 = projectPointOntoPlane(
+    point1,
+    plane.position,
+    planeNormal
+  );
+
+  const projectedPoint2 = projectPointOntoPlane(
+    point2,
+    plane.position,
+    planeNormal
+  );
+
+  console.log(projectedPoint1, projectedPoint2);
+
+  drawLineFromPoints("projectedTea", [projectedPoint1, projectedPoint2]);
+};
+
+function projectPointOntoPlane(
+  point: Vector3,
+  planePoint: Vector3,
+  planeNormal: Vector3
+) {
+  const distance = Vector3.Dot(point.subtract(planePoint), planeNormal);
+  return point.subtract(planeNormal.scale(distance));
+}
