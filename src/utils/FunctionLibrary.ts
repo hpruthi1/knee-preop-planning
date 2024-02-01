@@ -10,7 +10,6 @@ import {
   SceneLoader,
   Space,
   StandardMaterial,
-  Tools,
   Vector3,
 } from "@babylonjs/core";
 

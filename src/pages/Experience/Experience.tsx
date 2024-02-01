@@ -29,6 +29,10 @@ const Experience = () => {
     viewerRef.current?.updateFlexionPlane(value);
   };
 
+  const togglePlaneVisibility = () => {
+    viewerRef.current?.togglePlaneVisibility();
+  };
+
   return (
     <experienceContext.Provider
       value={{
@@ -41,6 +45,7 @@ const Experience = () => {
         setlinesCreated: setlinesCreated,
         updateVarusPlane: updateVarusPlane,
         updateFlexionPlane: updateFlexionPlane,
+        togglePlaneVisibility: togglePlaneVisibility,
       }}
     >
       <ViewerFC viewerRef={viewerRef} />

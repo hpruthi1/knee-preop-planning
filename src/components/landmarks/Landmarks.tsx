@@ -6,8 +6,13 @@ import { useContext } from "react";
 import { experienceContext } from "../../context/Context";
 
 const Landmarks = () => {
-  const { startLandmarkCreation, createLines, updateLines, linesCreated } =
-    useContext(experienceContext);
+  const {
+    startLandmarkCreation,
+    createLines,
+    updateLines,
+    linesCreated,
+    togglePlaneVisibility,
+  } = useContext(experienceContext);
   const landmarks = useAppSelector((state) => state.landmarks);
   const dispatch = useAppDispatch();
 
@@ -44,7 +49,14 @@ const Landmarks = () => {
         })}
       </ul>
 
-      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          gap: "1em",
+        }}
+      >
         <button
           disabled={landmarks.some((l) => !l.isPlaced)}
           onClick={() => {
@@ -52,6 +64,15 @@ const Landmarks = () => {
           }}
         >
           Update Line
+        </button>
+
+        <button
+          disabled={landmarks.some((l) => !l.isPlaced)}
+          onClick={() => {
+            togglePlaneVisibility();
+          }}
+        >
+          Show/Hide Planes
         </button>
       </div>
     </div>

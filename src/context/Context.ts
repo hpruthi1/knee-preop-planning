@@ -6,6 +6,7 @@ export interface IExperienceContextType {
   startLandmarkCreation: (pointName: string) => void;
   updateLines: () => void;
   createLines: () => void;
+  togglePlaneVisibility: () => void;
   linesCreated: boolean;
   setlinesCreated: Dispatch<SetStateAction<boolean>>;
   updateVarusPlane: (value: number) => void;

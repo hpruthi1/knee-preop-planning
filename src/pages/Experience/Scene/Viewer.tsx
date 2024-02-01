@@ -87,13 +87,13 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
     this.setupEnvironment();
 
-    document.addEventListener("keydown", function (zEvent) {
-      if (zEvent.ctrlKey && zEvent.shiftKey) {
-        scene.debugLayer.isVisible()
-          ? scene.debugLayer.hide()
-          : scene.debugLayer.show();
-      }
-    });
+    // document.addEventListener("keydown", function (zEvent) {
+    //   if (zEvent.ctrlKey && zEvent.shiftKey) {
+    //     scene.debugLayer.isVisible()
+    //       ? scene.debugLayer.hide()
+    //       : scene.debugLayer.show();
+    //   }
+    // });
 
     scene.whenReadyAsync().then(() => {
       engine.runRenderLoop(() => {
@@ -202,6 +202,27 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
 
     plane.rotation.x += Tools.ToRadians(value);
   }
+
+  togglePlaneVisibility = () => {
+    const perpendicularplane = this.scene?.getMeshByName(
+      "mechanicalPerpedicular"
+    );
+    const varusplane = this.scene?.getMeshByName("varusPlane");
+    const flexionplane = this.scene?.getMeshByName("flexionPlane");
+    if (!perpendicularplane || !varusplane || !flexionplane) return;
+
+    perpendicularplane?.visibility === 0
+      ? (perpendicularplane.visibility = 1)
+      : (perpendicularplane.visibility = 0);
+
+    varusplane?.visibility === 0
+      ? (varusplane.visibility = 1)
+      : (varusplane.visibility = 0);
+
+    flexionplane?.visibility === 0
+      ? (flexionplane.visibility = 1)
+      : (flexionplane.visibility = 0);
+  };
 
   updateLines = () => {};
 
