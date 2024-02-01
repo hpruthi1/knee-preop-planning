@@ -20,7 +20,7 @@ const initialState: ILandmark[] = [
   { name: "Femur Proximal Canal", isPlaced: false, selected: false },
   { name: "Femur Distal Canal", isPlaced: false, selected: false },
   {
-    name: "Medical Epicondyle",
+    name: "Medial Epicondyle",
     isPlaced: false,
     selected: false,
   },
@@ -29,10 +29,10 @@ const initialState: ILandmark[] = [
     isPlaced: false,
     selected: false,
   },
-  { name: "Distal Medical Pt", isPlaced: false, selected: false },
+  { name: "Distal Medial Pt", isPlaced: false, selected: false },
   { name: "Distal Lateral Pt", isPlaced: false, selected: false },
   {
-    name: "Posterior Medical Pt",
+    name: "Posterior Medial Pt",
     isPlaced: false,
     selected: false,
   },

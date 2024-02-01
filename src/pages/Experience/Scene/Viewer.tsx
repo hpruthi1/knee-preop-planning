@@ -158,16 +158,24 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     const ma = this.scene?.getMeshByName("mechanicalAxis");
     const aa = this.scene?.getMeshByName("anatomicalAxis");
 
-    if (ma || aa) {
+    const ta = this.scene?.getMeshByName("teaAxis");
+    const pca = this.scene?.getMeshByName("pcAxis");
+
+    if (ma || aa || ta || pca) {
       ma?.dispose();
       aa?.dispose();
+      ta?.dispose();
+      pca?.dispose();
     }
+
     const landmarks = store.getState().landmarks;
     const placed = landmarks.filter((landmark) => landmark.isPlaced);
+
+    console.log(placed);
+
     const femurCenter = placed.find((point) =>
       point.name.includes("Femur Center")
     );
-
     const hipCenter = placed.find((point) => point.name.includes("Hip Center"));
 
     const femurProximal = placed.find((point) =>
@@ -177,13 +185,43 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
       point.name.includes("Femur Distal Canal")
     );
 
-    if (!femurCenter || !hipCenter || !femurProximal || !femurDistal) return;
+    const medialEpi = placed.find((point) =>
+      point.name.includes("Medial Epicondyle")
+    );
+    const lateralEpi = placed.find((point) =>
+      point.name.includes("Lateral Epicondyle")
+    );
+
+    const postMedial = placed.find((point) =>
+      point.name.includes("Posterior Medial Pt")
+    );
+    const postLateral = placed.find((point) =>
+      point.name.includes("Posterior Lateral Pt")
+    );
+
+    if (
+      !femurCenter ||
+      !hipCenter ||
+      !femurProximal ||
+      !femurDistal ||
+      !medialEpi ||
+      !lateralEpi ||
+      !postMedial ||
+      !postLateral
+    )
+      return;
 
     const femurCenterMesh = this.scene?.getMeshByName(femurCenter.name);
     const hipCenterMesh = this.scene?.getMeshByName(hipCenter.name);
 
     const femurProximalMesh = this.scene?.getMeshByName(femurProximal.name);
     const femurDistalMesh = this.scene?.getMeshByName(femurDistal.name);
+
+    const medialEpiMesh = this.scene?.getMeshByName(medialEpi.name);
+    const lateralEpiMesh = this.scene?.getMeshByName(lateralEpi.name);
+
+    const postMedialMesh = this.scene?.getMeshByName(postMedial.name);
+    const postLateralMesh = this.scene?.getMeshByName(postLateral.name);
 
     const mechanicalAxisPoints = [
       femurCenterMesh!.absolutePosition,
@@ -195,11 +233,28 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
       femurDistalMesh!.absolutePosition,
     ];
 
+    const teaAxisPoints = [
+      medialEpiMesh!.absolutePosition,
+      lateralEpiMesh!.absolutePosition,
+    ];
+
+    const pcAxisPoints = [
+      postMedialMesh!.absolutePosition,
+      postLateralMesh!.absolutePosition,
+    ];
+
     const path = new Path3D(mechanicalAxisPoints);
+
     const curve = path.getCurve();
 
     const path2 = new Path3D(anatomicalAxisPoints);
     const curve2 = path2.getCurve();
+
+    const path3 = new Path3D(teaAxisPoints);
+    const curve3 = path3.getCurve();
+
+    const path4 = new Path3D(pcAxisPoints);
+    const curve4 = path4.getCurve();
 
     // visualisation
     const mechanicalAxis = MeshBuilder.CreateLines("mechanicalAxis", {
@@ -213,10 +268,26 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     });
 
     anatomicalAxis.renderingGroupId = 1;
-    anatomicalAxis.color = Color3.Blue();
+    anatomicalAxis.color = Color3.Random();
+
+    const teaAxis = MeshBuilder.CreateLines("teaAxis", {
+      points: curve3,
+      updatable: true,
+    });
+
+    teaAxis.renderingGroupId = 1;
+    teaAxis.color = Color3.Random();
+
+    const pcAxis = MeshBuilder.CreateLines("pcAxis", {
+      points: curve4,
+      updatable: true,
+    });
+
+    pcAxis.renderingGroupId = 1;
+    pcAxis.color = Color3.Random();
 
     mechanicalAxis.renderingGroupId = 1;
-    mechanicalAxis.color = Color3.Red();
+    mechanicalAxis.color = Color3.Random();
   };
 
   startLandmarkCreation = (pointName: string) => {
