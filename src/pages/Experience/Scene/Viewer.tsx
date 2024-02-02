@@ -82,6 +82,8 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     this.engine = engine;
     this.scene = scene;
 
+    this.engine.displayLoadingUI();
+
     this.prepareCamera();
     this.prepareLighting();
 
@@ -96,6 +98,7 @@ export class Viewer extends Component<IViewerProps, IViewerState> {
     // });
 
     scene.whenReadyAsync().then(() => {
+      engine.hideLoadingUI();
       engine.runRenderLoop(() => {
         scene.render();
       });
